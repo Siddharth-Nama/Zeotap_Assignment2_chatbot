@@ -37,9 +37,15 @@ def fetch_and_extract_text(url):
         print(f"Error fetching {url}: {e}")
         return None
 def find_best_match(query, cdp_base_url):
+    print(f"Fetching data from: {cdp_base_url}")
     text_content = fetch_and_extract_text(cdp_base_url)
     if not text_content:
+        print("No content fetched from the URL")
         return None
+    
+    print(f"Fetched text: {text_content[:500]}...")  # Show first 500 characters
+
+
     query_embedding = model.encode(preprocess_text(query))
     sentences = text_content.split('.')
     sentence_similarities = []
@@ -48,8 +54,14 @@ def find_best_match(query, cdp_base_url):
             sentence_embedding = model.encode(preprocess_text(sentence))
             similarity = cosine_similarity([query_embedding], [sentence_embedding])[0][0]
             sentence_similarities.append((sentence, similarity))
+            
+    
     top_sentences = sorted(sentence_similarities, key=lambda x: x[1], reverse=True)[:3]
-    return ".\n".join([sentence for sentence, score in top_sentences])
+    best_match = ".\n".join([sentence for sentence, score in top_sentences])
+
+    print(f"Best Match Found: {best_match}")
+
+    return best_match
 
 def clear_data_directory(base_dir='data'):
     """Clears the data directory, deleting all files within subdirectories"""
